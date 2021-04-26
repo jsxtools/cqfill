@@ -1,13 +1,13 @@
 {
   "name": "cqfill",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Polyfill for CSS Container Queries",
   "type": "module",
   "main": "dist/cqfill.cjs",
   "module": "dist/cqfill.mjs",
   "typings": "dist/cqfill.d.ts",
-  "jsdelivr": "dist/cqfill.iife.js",
-  "unpkg": "dist/cqfill.iife.js",
+  "jsdelivr": "dist/cqfill.js",
+  "unpkg": "dist/cqfill.js",
   "exports": {
     "require": "./dist/cqfill.cjs",
     "import": "./dist/cqfill.mjs",
