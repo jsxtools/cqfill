@@ -1,3 +1,7 @@
+export const cqfill = (() => {
+
+if (typeof document === 'undefined') return () => {}
+
 const unmatchableSelector = ':not(*)'
 
 const { every, indexOf, slice } = Array.prototype
@@ -227,7 +231,7 @@ const mo = new MutationObserver(() => {
 
 const supportsLayoutContainment = CSS.supports('contain: layout inline-size')
 
-export const cqfill = () => {
+return () => {
 	if (!supportsLayoutContainment) {
 		for (const styleSheet of document.styleSheets) {
 			if (!styleSheet.href) {
@@ -237,3 +241,5 @@ export const cqfill = () => {
 		}
 	}
 }
+
+})()

@@ -1,17 +1,28 @@
 {
   "name": "cqfill",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Polyfill for CSS Container Queries",
   "type": "module",
-  "main": "dist/cqfill.cjs",
-  "module": "dist/cqfill.mjs",
-  "typings": "dist/cqfill.d.ts",
-  "jsdelivr": "dist/cqfill.js",
-  "unpkg": "dist/cqfill.js",
+  "main": "dist/polyfill.cjs",
+  "module": "dist/polyfill.mjs",
+  "typings": "dist/polyfill.d.ts",
+  "jsdelivr": "dist/polyfill.js",
+  "unpkg": "dist/polyfill.js",
   "exports": {
-    "require": "./dist/cqfill.cjs",
-    "import": "./dist/cqfill.mjs",
-    "default": "./dist/cqfill.mjs"
+    ".": [
+      {
+        "require": "./dist/polyfill.cjs",
+        "import": "./dist/polyfill.mjs"
+      },
+      "./dist/polyfill.mjs"
+    ],
+    "./postcss": [
+      {
+        "require": "./dist/postcss.cjs",
+        "import": "./dist/postcss.mjs"
+      },
+      "./dist/postcss.mjs"
+    ]
   },
   "files": [
     "dist"
@@ -26,11 +37,15 @@
     "access": "public"
   },
   "scripts": {
-    "build": "node .bin/build"
+    "build": "node .bin/build.js",
+    "pretest": "node .bin/build.js && npm link",
+    "posttest": "npm unlink cqfill",
+    "test": "node test/postcss.js"
   },
   "devDependencies": {
     "esbuild": "^0.11.14",
     "nodemon": "^2.0.7",
+    "postcss": "^8.2.13",
     "terser": "^5.6.1"
   },
   "keywords": [

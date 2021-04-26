@@ -16,6 +16,8 @@ npm install cqfill
 
 ## Usage
 
+Add the CQFill script to your page:
+
 ```html
 <script src="https://unpkg.com/cqfill"></script>
 
@@ -23,7 +25,60 @@ npm install cqfill
 <script>cqfill()</script>
 ```
 
-Add a fallback property to support the CSS `contain` property.
+Or, add the CQFill script to your NodeJS project:
+
+```js
+import { cqfill } from 'cqfill'
+
+// after the stylesheets have been declared
+cqfill()
+```
+
+Now, use some CSS container queries:
+
+```css
+.container {
+  contain: layout inline-size;
+}
+
+@container (min-width: 700px) {
+  .contained {
+    /* styles applied when a container is at least 700px */
+  }
+}
+```
+
+## Creating Polyfillable CSS with PostCSS
+
+Use the included PostCSS plugin to process your CSS:
+
+```js
+const { postcssCQFill } = require('cqfill')
+const postcss = require('postcss')
+
+postcss([ postcssCQFill ])
+```
+
+To transform CSS with PostCSS and without any other tooling:
+
+```js
+import fs from 'fs'
+import postcss from 'postcss'
+import { postcssCQFill } from 'cqfill/postcss'
+
+const from = './test/readme.css'
+const fromCss = fs.readFileSync(from, 'utf8')
+
+const to = './test/readme.polyfilled.css'
+
+postcss([ postcssCQFill ]).process(fromCss, { from, to }).then(
+  ({ css }) => fs.writeFileSync(to, css)
+)
+```
+
+## Creating Polyfillable CSS with Yourself
+
+Add a fallback property to support the CSS [`contain`] property.
 
 ```css
 /* before */
@@ -43,20 +98,24 @@ Duplicate container queries using a fallback rule.
 ```css
 /* before */
 @container (min-width: 700px) {
-  .whatever-selectors {
+  .contained {
+    /* styles applied when a container is at least 700px */
   }
 }
 
 /* after */
 @media --css-container and (min-width: 700px) {
-  .whatever-selectors {
+  .contained {
+    /* styles applied when a container is at least 700px */
   }
 }
 
 @container (min-width: 700px) {
-  .whatever-selectors {
+  .contained {
+    /* styles applied when a container is at least 700px */
   }
 }
 ```
 
-This project will soon include a PostCSS plugin to do this for you.
+[`contain`]: https://developer.mozilla.org/en-US/docs/Web/CSS/contain
+[CSS Container Queries]: https://css.oddbird.net/rwd/query/explainer/
