@@ -3,7 +3,7 @@
 **CQFill** is a polyfill for [CSS Container Queries].
 
 ```sh
-npm install cqfill
+npm install cqfill # yarn add cqfill
 ```
 
 ## Demos
@@ -16,7 +16,7 @@ npm install cqfill
 
 ## Usage
 
-Add the CQFill script to your page:
+Add the **CQFill** polyfill to your page:
 
 ```html
 <script src="https://unpkg.com/cqfill"></script>
@@ -34,7 +34,7 @@ import { cqfill } from 'cqfill'
 cqfill()
 ```
 
-Now, use some CSS container queries:
+Now, go forth and use CSS container queries:
 
 ```css
 .container {
@@ -48,13 +48,44 @@ Now, use some CSS container queries:
 }
 ```
 
-## Creating Polyfillable CSS with PostCSS
+## Usage with NextJS
+
+First, add the **CQFill** polyfill to your `pages/_.app.js` file:
+
+```js
+import { cqfill } from 'cqfill'
+
+function App({ Component, pageProps }) {
+	cqfill()
+
+	return <Component {...pageProps} />
+}
+
+export default App
+```
+
+Next, add the included PostCSS 7 plugin to your `.postcssrc.json` file:
+
+```js
+{
+  "plugins": [
+    "postcss-nesting/postcss-7",
+    "cqfill/postcss-7"
+  ]
+}
+```
+
+Now you can use container queries in global CSS or CSS Modules.
+
+The nesting plugin pairs nicely with CQFill, letting you nest `@container` at-rules.
+
+## Usage with PostCSS
 
 Use the included PostCSS plugin to process your CSS:
 
 ```js
 import postcss from 'postcss'
-import { postcssCQFill } from 'cqfill/postcss'
+import postcssCQFill from 'cqfill/postcss'
 
 postcss([ postcssCQFill ])
 ```
@@ -64,7 +95,7 @@ To transform CSS with PostCSS and without any other tooling:
 ```js
 import fs from 'fs'
 import postcss from 'postcss'
-import { postcssCQFill } from 'cqfill/postcss'
+import postcssCQFill from 'cqfill/postcss'
 
 const from = './test/readme.css'
 const fromCss = fs.readFileSync(from, 'utf8')
@@ -76,7 +107,7 @@ postcss([ postcssCQFill ]).process(fromCss, { from, to }).then(
 )
 ```
 
-## Creating Polyfillable CSS with Yourself
+## Usage with Yourself
 
 Add a fallback property to support the CSS [`contain`] property.
 

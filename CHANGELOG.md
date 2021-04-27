@@ -1,5 +1,10 @@
 # Changes to CQFill
 
+### 0.3.0 (April 26, 2021)
+
+- Changes the PostCSS plugin to be the default export.
+- Adds a PostCSS 7 version of the plugin for increased tooling compatibility.
+
 ### 0.2.1 (April 26, 2021)
 
 - Fixes PostCSS usage instructions.
