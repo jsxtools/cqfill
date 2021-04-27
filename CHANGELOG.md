@@ -1,5 +1,9 @@
 # Changes to CQFill
 
+### 0.4.0 (April 26, 2021)
+
+- Adds PostCSS support for the range syntax — `(width >= 700px)`.
+
 ### 0.3.1 (April 26, 2021)
 
 - Adds an `"export"` in `package.json` for `"./postcss-7"`.

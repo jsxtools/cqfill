@@ -1,3 +1,5 @@
+import { transformRanges } from './lib/transformRanges'
+
 function postcssCQFill() {
 	return {
 		postcssPlugin: 'PostCSS CQFill',
@@ -10,6 +12,8 @@ function postcssCQFill() {
 		},
 		AtRule: {
 			container(cssAtRule) {
+				cssAtRule.params = transformRanges(cssAtRule.params)
+
 				cssAtRule.cloneBefore({
 					name: 'media',
 					params: `--css-container and ${cssAtRule.params}`
