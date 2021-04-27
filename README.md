@@ -53,8 +53,8 @@ Now, use some CSS container queries:
 Use the included PostCSS plugin to process your CSS:
 
 ```js
-const { postcssCQFill } = require('cqfill')
-const postcss = require('postcss')
+import postcss from 'postcss'
+import { postcssCQFill } from 'cqfill/postcss'
 
 postcss([ postcssCQFill ])
 ```
