@@ -1,6 +1,6 @@
 {
   "name": "cqfill",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Polyfill for CSS Container Queries",
   "type": "module",
   "main": "dist/polyfill.cjs",
@@ -11,17 +11,24 @@
   "exports": {
     ".": [
       {
-        "require": "./dist/polyfill.cjs",
-        "import": "./dist/polyfill.mjs"
+        "import": "./dist/polyfill.mjs",
+        "require": "./dist/polyfill.cjs"
       },
       "./dist/polyfill.mjs"
     ],
     "./postcss": [
       {
-        "require": "./dist/postcss.cjs",
-        "import": "./dist/postcss.mjs"
+        "import": "./dist/postcss.mjs",
+        "require": "./dist/postcss.cjs"
       },
       "./dist/postcss.mjs"
+    ],
+    "./postcss-7": [
+      {
+        "import": "./postcss-7/index.mjs",
+        "require": "./postcss-7/index.js"
+      },
+      "./postcss-7/index.mjs"
     ]
   },
   "files": [

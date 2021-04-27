@@ -1,5 +1,9 @@
 # Changes to CQFill
 
+### 0.3.1 (April 26, 2021)
+
+- Adds an `"export"` in `package.json` for `"./postcss-7"`.
+
 ### 0.3.0 (April 26, 2021)
 
 - Changes the PostCSS plugin to be the default export.
