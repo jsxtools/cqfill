@@ -1,5 +1,9 @@
 # Changes to CQFill
 
+### 0.2.1 (April 26, 2021)
+
+- Fixes PostCSS usage instructions.
+
 ### 0.2.0 (April 26, 2021)
 
 - Adds a PostCSS plugin.
