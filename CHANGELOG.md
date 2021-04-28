@@ -1,5 +1,10 @@
 # Changes to CQFill
 
+### 0.5.0 (April 28, 2021)
+
+- Adds support for non-px query values — `(width >= 25em)`.
+- Adds support for external stylesheets from the same origin.
+
 ### 0.4.0 (April 26, 2021)
 
 - Adds PostCSS support for the range syntax — `(width >= 700px)`.
