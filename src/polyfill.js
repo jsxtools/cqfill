@@ -234,7 +234,10 @@ const supportsLayoutContainment = CSS.supports('contain: layout inline-size')
 return () => {
 	if (!supportsLayoutContainment) {
 		for (const styleSheet of document.styleSheets) {
-			if (!styleSheet.href) {
+			if (
+				!styleSheet.href
+				|| styleSheet.href.startsWith(location.origin)
+			) {
 				polyfillContainerQueries(styleSheet)
 				polyfillLayoutContainment(styleSheet)
 			}
