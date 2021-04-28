@@ -4,5 +4,6 @@ package-lock.json
 yarn.lock
 *.log*
 .*
+!.bin
 !.editorconfig
 !.gitignore
