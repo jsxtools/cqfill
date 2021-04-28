@@ -168,23 +168,37 @@ const polyfillContainerQueries = (styleSheet) => {
 			if (hasContainerQueryPolyfill) {
 				const containerQueryMatcher = /\(\s*(min|max)-(height|width):\s*([^\s]+)\s*\)/
 
-				/** @type {null | [string, 'max' | 'min', 'height' | 'width', `${number}px`]} */
+				/** @type {null | [string, 'max' | 'min', 'height' | 'width', `${number}${string}`]} */
 				const containerQueryMatches = cssRule.media[0].match(containerQueryMatcher)
 
 				// If the target rule represents a fallback container query;
 				// Parse the container query from the target rule, and;
 				if (containerQueryMatches) {
+					const numberMatcher = /^([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[Ee][+-]?\d+)?)(.*)$/
+
 					const [, minMax, axis, size] = containerQueryMatches
-					const sizeInt = parseInt(size)
+
+					const [, sizeValue, sizeUnit] = size.match(numberMatcher)
 
 					/** @type {(rect: Element) => boolean} */
 					const doesFulfillQuery = (element) => {
 						const value = element.getBoundingClientRect()[axis]
+						const sized = Number(sizeValue) * (
+							sizeUnit === 'em'
+								? parseInt(window.getComputedStyle(element).fontSize)
+							: sizeUnit === 'rem'
+								? parseInt(window.getComputedStyle(document.documentElement).fontSize)
+							: sizeUnit === 'vh'
+								? window.innerHeight / 100
+							: sizeUnit === 'vw'
+								? window.innerWidth / 100
+							: 1
+						)
 
 						return (
 							minMax === 'min'
-								? value >= sizeInt
-							: value <= sizeInt
+								? value >= sized
+							: value <= sized
 						)
 					}
 
