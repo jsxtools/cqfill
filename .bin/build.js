@@ -6,56 +6,71 @@ import nodemon from 'nodemon'
 import zlib from 'zlib'
 import { minify } from 'terser'
 
+/** @typedef {{ [name: string]: string }} Exports */
+/** @typedef {{ extension: string, transform(code: string, exports: Exports): string }} Variant */
+/** @type {{ [name: string]: Variant }} */
 const variants = {
 	esm: {
 		extension: 'mjs',
 		transform(code, exports) {
+			/** @type {string[]} */
 			const esmExports = []
 			for (const name in exports) esmExports.push(`${exports[name]} as ${name}`)
-			return `${code}export{${esmExports.join(',')}}`
+			return (
+				esmExports.length
+					? `${code}export{${esmExports.join(',')}}`
+				: code
+			)
 		},
 	},
 	cjs: {
 		extension: 'cjs',
 		transform(code, exports) {
+			/** @type {string[]} */
 			const cjsExports = []
 			for (const name in exports) cjsExports.push(`${name}:${exports[name]}`)
 			return (
-				'default' in exports
-					? `${code}module.exports=Object.assign(${exports.default},{${cjsExports.join(',')}})`
-				: `${code}module.exports={${cjsExports.join(',')}}`
+				cjsExports.length
+					? 'default' in exports
+						? `${code}module.exports=Object.assign(${exports.default},{${cjsExports.join(',')}})`
+					: `${code}module.exports={${cjsExports.join(',')}}`
+				: code
 			)
 		},
 	},
 	iife: {
 		extension: 'js',
 		transform(code, exports) {
-			const iifeExports = []
-			for (const name in exports) iifeExports.push(`globalThis.${name}=${exports[name]}`)
-			return `(()=>{${code}${iifeExports.join(';')}})()`
+			code = code.replace(/;$/, '')
+			for (const name in exports) code = `${code};globalThis.${name}=${exports[name]}`
+			return code
 		},
 	},
 }
 
-export const build = async (packageUrl, base, opts) => {
+/** @type {(pkgUrl: URL, base: string, opts: Options) => Promise<void>} */
+export const build = async (pkgUrl, base, opts) => {
 	opts = Object.assign({ only: [] }, opts)
 
-	const initPackageUrl = new URL('src/', packageUrl)
-	const distPackageUrl = new URL('dist/', packageUrl)
+	/** @type {{ name: string }} */
+	const { name } = JSON.parse(
+		await fs.readFile(
+			new URL('package.json', pkgUrl),
+			'utf8'
+		)
+	)
 
-	const packageJsonUrl = new URL(`package.json`, packageUrl)
-	const packageName = JSON.parse(await fs.readFile(packageJsonUrl, 'utf8')).name
-
-	if (!opts.only.length || opts.only.includes(packageName)) {
-		const targetPathname = new URL(`${base}.js`, initPackageUrl).pathname
-		const outputPathname = new URL(`${base}.js`, distPackageUrl).pathname
+	if (!opts.only.length || opts.only.includes(name)) {
+		const srcUrl = new URL(`src/${base}.js`, pkgUrl)
+		const outDirUrl = new URL(`${base}/`, pkgUrl)
+		const outEsmUrl = new URL(`${base}/${name}.mjs`, pkgUrl)
 
 		// Build ESM version
 		const {
 			outputFiles: [cmapResult, codeResult],
 		} = await esbuild.build({
-			entryPoints: [targetPathname],
-			outfile: outputPathname,
+			entryPoints: [srcUrl.pathname],
+			outfile: outEsmUrl.pathname,
 			bundle: true,
 			format: 'esm',
 			sourcemap: 'external',
@@ -66,23 +81,29 @@ export const build = async (packageUrl, base, opts) => {
 		const { code, map } = await minify(codeResult.text, {
 			sourceMap: { content: cmapResult.text },
 			compress: true,
+			keep_fnames: true,
 			module: true,
 			mangle: true,
 			toplevel: true,
 		})
 
 		// ensure empty dist directory
-		await fs.mkdir(distPackageUrl, { recursive: true })
+		await fs.mkdir(outDirUrl, { recursive: true })
 
 		// write map
-		await fs.writeFile(new URL(`${base}.map`, distPackageUrl), map)
+		await fs.writeFile(new URL(`${name}.map`, outDirUrl), map)
 
 		// prepare variations
+		/** @type {(code: string, index?: number) => [string, string]} */
 		const splitByExport = (code, index = code.indexOf('export')) => [code.slice(0, index), code.slice(index)]
 		const [lead, tail] = splitByExport(code)
 
-		const exports = Array.from(tail.matchAll(/([$\w]+) as (\w+)/g)).reduce((exports, each) => Object.assign(exports, { [each[2]]: each[1] }), Object.create(null))
+		/** @type {{ [name: string]: string }} */
+		const exports = Array.from(tail.matchAll(/([$\w]+) as (\w+)/g)).reduce(
+			(exports, each) => Object.assign(exports, { [each[2]]: each[1] }), Object.create(null)
+		)
 
+		/** @type {(object: object, name: string) => boolean} */
 		const hasOwnProperty = (object, name) => Object.prototype.hasOwnProperty.call(object, name)
 
 		const customExports = {
@@ -103,8 +124,9 @@ export const build = async (packageUrl, base, opts) => {
 
 		// write variation builds
 		for (const variant in variants) {
+			/** @type {Variant} */
 			const variantInfo = variants[variant]
-			const variantPath = new URL(`dist/${base}.${variantInfo.extension}`, packageUrl).pathname
+			const variantPath = new URL(`${name}.${variantInfo.extension}`, outDirUrl).pathname
 			const variantCode = variantInfo.transform(lead, customExports[variant] || exports)
 			const variantMins = (Buffer.byteLength(variantCode) / 1000).toFixed(2)
 			const variantGzip = Number(zlib.gzipSync(variantCode, { level: 9 }).length / 1000).toFixed(2)
@@ -117,16 +139,45 @@ export const build = async (packageUrl, base, opts) => {
 			const mapping = variant === 'iife' ? '' : `\n//# sourceMappingUrl=${base}.map`
 
 			await fs.writeFile(variantPath, variantCode + mapping)
+
+			const packageJSON = JSON.stringify({
+				private: true,
+				type: 'module',
+				main: `${name}.cjs`,
+				module: `${name}.mjs`,
+				jsdelivr: `${name}.js`,
+				unpkg: `${name}.js`,
+				files: [
+					`${name}.cjs`,
+					`${name}.js`,
+					`${name}.mjs`
+				],
+				exports: {
+					'.': {
+						browser: `./${name}.js`,
+						import: `./${name}.mjs`,
+						require: `./${name}.cjs`,
+						default: `./${name}.mjs`
+					}
+				}
+			}, null, '  ')
+
+			await fs.writeFile(new URL('package.json', outDirUrl), packageJSON)
 		}
 
 		console.log(box(size))
 	}
 }
 
+/** @typedef {{ only?: string[] }} Options */
+
+/** @type {(opts: Options) => Promise<void>} */
 export const buildAll = async (opts) => {
-	const packageUrl = new URL('../', import.meta.url)
-	await build(packageUrl, 'polyfill', opts)
-	await build(packageUrl, 'postcss', opts)
+	const pkgUrl = new URL('../', import.meta.url)
+	await build(pkgUrl, 'export', opts)
+	await build(pkgUrl, 'postcss', opts)
+	await build(pkgUrl, 'postcss-7', opts)
+	await build(pkgUrl, 'polyfill', opts)
 }
 
 if (isProcessMeta(import.meta)) {

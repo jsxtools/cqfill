@@ -4,14 +4,20 @@ function postcssCQFill() {
 	return {
 		postcssPlugin: 'PostCSS CQFill',
 		Declaration: {
-			contain(cssDeclaration) {
+			contain(
+				/** @type {PostCSSDeclaration} */
+				cssDeclaration
+			) {
 				cssDeclaration.cloneBefore({
 					prop: '--css-contain'
 				})
 			}
 		},
 		AtRule: {
-			container(cssAtRule) {
+			container(
+				/** @type {PostCSSAtRule} */
+				cssAtRule
+			) {
 				cssAtRule.params = transformRanges(cssAtRule.params)
 
 				cssAtRule.cloneBefore({
@@ -26,3 +32,6 @@ function postcssCQFill() {
 postcssCQFill.postcss = true
 
 export default postcssCQFill
+
+/** @typedef {{ name: string, params: string, cloneBefore(opts: Partial<PostCSSAtRule>): PostCSSAtRule }} PostCSSAtRule */
+/** @typedef {{ prop: string, cloneBefore(opts: Partial<PostCSSDeclaration>): PostCSSDeclaration }} PostCSSDeclaration */

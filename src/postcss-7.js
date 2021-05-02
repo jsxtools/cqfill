@@ -1,4 +1,4 @@
-import postcssCQFill from '../dist/postcss.mjs'
+import postcssCQFill from './postcss.js'
 
 export default Object.defineProperties(postcssCQFill, Object.getOwnPropertyDescriptors({
 	get postcss() {

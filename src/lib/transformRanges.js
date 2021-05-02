@@ -1,7 +1,10 @@
 const mqunit = /([\d.]+)([^]*)/
 
-/** Returns a media query with polyfilled ranges. */
-export const transformRanges = (media) => memo(media, media => media.replace(
+/** @type {(media: string) => string} Returns a media query with polyfilled ranges. */
+export const transformRanges = (
+	/** @type {string} */
+	media
+) => memo(media, media => media.replace(
 	/\(\s*([\w-]+)\s*(=|<|<=|>|>=)\s*([\w-]+)\s*(?:(<|<=|>|>=)\s*([\w-]+)\s*)?\)/g,
 	(
 		__,
@@ -44,9 +47,15 @@ export const transformRanges = (media) => memo(media, media => media.replace(
 ))
 
 /** Returns a memoized result. */
-const memo = (value, func) => {
+const memo = (
+	/** @type {string} */
+	value,
+	/** @type {(value: string) => string} */
+	func
+) => {
 	if (value in memos) return memos[value]
 	else return memos[value] = func(value)
 }
 
+/** @type {{ [name: string]: (value: string) => string }} */
 const memos = Object.create(null)
