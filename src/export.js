@@ -14,7 +14,10 @@ export const cqfill = ((
 	/** @type {Set<Element>} */
 	layoutContainerSet = new Set(),
 
-	/** @type {[string, CSSStyleRule, (rect: Element) => boolean][]} */
+	/** @type {Map<Element, string>} */
+	layoutContainerMap = new WeakMap(),
+
+	/** @type {[string, CSSStyleRule, (rect: Element, matchableAxis: 'width' | 'height') => boolean, matchableAxis: 'width' | 'height'][]} */
 	containerQueries = [],
 
 	/** @type {(() => void)[]} */
@@ -40,22 +43,22 @@ export const cqfill = ((
 	/** @type {(element: Element) => boolean} */
 	hasInlineOuterDisplay = (element) => /inline/i.test(getComputedStyle(element).display),
 
-	/** @type {(cssGroup: CSSParentRule, cssRule: CSSAnyRule) => number} */
-	getCSSRuleIndexOf = (cssGroup, cssRule) => indexOf.call(cssGroup.cssRules || [], cssRule),
+	/** @type {(cssParentRule: CSSParentRule, cssRule: CSSAnyRule) => number} */
+	getCSSRuleIndexOf = (cssParentRule, cssRule) => indexOf.call(cssParentRule.cssRules || [], cssRule),
 
-	/** @type {(cssGroup: CSSParentRule) => CSSAnyRule[]} */
-	getCSSRules = (/** @type {CSSGroupingRule} */ cssGroup) => slice.call(cssGroup.cssRules || []),
+	/** @type {(cssParentRule: CSSParentRule) => CSSAnyRule[]} */
+	getCSSRules = (cssParentRule) => slice.call(cssParentRule.cssRules || []),
 
-	/** @type {(cssGroup: CSSParentRule, cssText: string, index: number) => CSSAnyRule} */
-	insertCssRule = (cssGroup, cssText, index) => cssGroup.cssRules[cssGroup.insertRule(cssText, index)],
+	/** @type {(cssParentRule: CSSParentRule, cssText: string, index: number) => CSSAnyRule} */
+	insertCssRule = (cssParentRule, cssText, index) => cssParentRule.cssRules[cssParentRule.insertRule(cssText, index)],
 
 	onResize = () => {
-		for (const [containedSelectorText, innerRule, doesFulfillQuery] of containerQueries) {
+		for (const [containedSelectorText, innerRule, doesFulfillQuery, axis] of containerQueries) {
 			/** @type {Set<Element>} */
 			const fulfilledElements = new Set()
 
 			for (const layoutContainer of layoutContainerSet) {
-				if (doesFulfillQuery(layoutContainer)) {
+				if (doesFulfillQuery(layoutContainer, layoutContainerMap.get(layoutContainer))) {
 					for (const element of layoutContainer.querySelectorAll(containedSelectorText)) {
 						fulfilledElements.add(element)
 					}
@@ -78,9 +81,9 @@ export const cqfill = ((
 		}
 	},
 
-	/** @type {(root: DocumentOrShadowRoot, cssRule: CSSAnyRule, cssGroup: CSSParentRule, hasInlineSizeContainment: boolean) => string} */
-	addLayoutContainerByCssRule = (root, cssRule, cssGroup, hasInlineSizeContainment) => {
-		const cssRuleIndex = getCSSRuleIndexOf(cssGroup, cssRule)
+	/** @type {(root: DocumentOrShadowRoot, cssRule: CSSAnyRule, cssParentRule: CSSParentRule, hasInlineSizeContainment: boolean, hasBlockSizeContainment: boolean) => string} */
+	addLayoutContainerByCssRule = (root, cssRule, cssParentRule, hasInlineSizeContainment, hasBlockSizeContainment) => {
+		const cssRuleIndex = getCSSRuleIndexOf(cssParentRule, cssRule)
 		const getFallbackCssText = (
 			/** @type {boolean} */
 			hasInlineDisplay
@@ -88,13 +91,21 @@ export const cqfill = ((
 			`${
 				unmatchableSelector
 			}{transform:scale3d(1,1,1);${
-				hasInlineSizeContainment ? 'inline-size' : 'block-size'
-			}:${
-				hasInlineDisplay ? 0 : 100
-			}%}`
+				hasInlineSizeContainment ? (
+					`inline-size:${
+						hasInlineDisplay ? 0 : 100
+					}%;`
+				 ) : ''
+			}${
+				hasBlockSizeContainment ? (
+					`block-size:${
+						hasInlineDisplay ? 0 : 100
+					};`
+				) : ''
+			}}`
 		)
 		const fallbackCssText = `@media all{${getFallbackCssText(true)}${getFallbackCssText(false)}}`
-		const cssPolyfillGroup = insertCssRule(cssGroup, fallbackCssText, cssRuleIndex)
+		const cssPolyfillGroup = insertCssRule(cssParentRule, fallbackCssText, cssRuleIndex)
 		const [cssInlinePolyfillStyleRule, cssBlockPolyfillStyleRule] = cssPolyfillGroup.cssRules
 
 		/** @type {Element[]} */
@@ -121,6 +132,7 @@ export const cqfill = ((
 
 				for (const element of elements) {
 					layoutContainerSet.add(element)
+					layoutContainerMap.set(element, [hasInlineSizeContainment, hasBlockSizeContainment])
 
 					const selectorText = getElementSelectorText(element)
 
@@ -153,19 +165,21 @@ export const cqfill = ((
 
 	/** @type {(root: DocumentOrShadowRoot, styleSheet: CSSStyleSheet) => void} */
 	polyfillLayoutContainment = (root, styleSheet) => {
-		/** @type {(cssRule: CSSStyleRule) => string} */
-		const getCssStyleRuleContainValue = (cssRule) => cssRule.style ? cssRule.style.getPropertyValue('--css-contain').trim() : ''
+		/** @type {(cssRule: CSSStyleRule) => string[]} */
+		const getCssStyleRuleContainValues = (cssRule) => cssRule.style ? cssRule.style.getPropertyValue('--css-contain').trim().toLowerCase().split(/\s+/) : []
 
-		/** @type {(cssGroup: CSSGroupingRule | CSSStyleSheet) => void} */
-		const walkCssRules = (cssGroup) => {
+		/** @type {(cssParentRule: CSSParentRule) => void} */
+		const walkCssParent = (cssParentRule) => {
 			// For each `CSSRule` in a `CSSGroupingRule` or `CSSStyleSheet`;
-			for (const cssRule of getCSSRules(cssGroup)) {
-				walkCssRules(cssRule)
+			for (const cssRule of getCSSRules(cssParentRule)) {
+				walkCssParent(cssRule)
 
-				const containValue = getCssStyleRuleContainValue(cssRule)
+				const containValues = getCssStyleRuleContainValues(cssRule)
 
-				const hasInlineSizeContainment = containValue === 'layout inline-size'
-				const hasBlockSizeContainment = containValue === 'layout block-size'
+				const hasLayoutContainment = containValues.includes('layout')
+				const hasSizeContainment = containValues.includes('size')
+				const hasInlineSizeContainment = hasLayoutContainment && (hasSizeContainment || containValues.includes('inline-size'))
+				const hasBlockSizeContainment = hasLayoutContainment && (hasSizeContainment || containValues.includes('block-size'))
 
 				// If the target rule represents a style rule, and;
 				// If the target rule style contains a fallback contain property, and;
@@ -173,20 +187,20 @@ export const cqfill = ((
 				if (hasInlineSizeContainment || hasBlockSizeContainment) {
 					// Add the element to the list of layout containers, and;
 					// Add a fallback layout containment rule for that specific element.
-					addLayoutContainerByCssRule(root, cssRule, cssGroup, hasInlineSizeContainment)
+					addLayoutContainerByCssRule(root, cssRule, cssParentRule, hasInlineSizeContainment, hasBlockSizeContainment)
 				}
 			}
 		}
 
-		walkCssRules(styleSheet)
+		walkCssParent(styleSheet)
 	},
 
 	/** @type {(root: DocumentOrShadowRoot, styleSheet: CSSStyleSheet) => void} */
 	polyfillContainerQueries = (root, styleSheet) => {
-		/** @type {(cssGroup: CSSParentRule) => void} */
-		const walkCssRules = (cssGroup) => {
+		/** @type {(cssParentRule: CSSParentRule) => void} */
+		const walkCssParent = (cssParentRule) => {
 			// For each `CSSRule` in a `CSSGroupingRule` or `CSSStyleSheet`;
-			for (const cssRule of getCSSRules(cssGroup)) {
+			for (const cssRule of getCSSRules(cssParentRule)) {
 				/** @type {string} */
 				const mediaText = cssRule.media ? cssRule.media.mediaText : ''
 
@@ -203,8 +217,11 @@ export const cqfill = ((
 
 						const [, sizeValue, sizeUnit] = size.match(numberMatcher)
 
-						/** @type {(rect: Element) => boolean} */
-						const doesFulfillQuery = (element) => {
+						/** @type {(rect: Element, hasInlineSizeContainment: boolean, hasBlockSizeContainment: boolean) => boolean} */
+						const doesFulfillQuery = (element, hasInlineSizeContainment, hasBlockSizeContainment) => {
+							const fulfillsBlockSizeContainment = (hasBlockSizeContainment !== (axis === 'block-size' || axis === 'height'))
+							const fulfillsInlineSizeContainment = (hasInlineSizeContainment !== (axis === 'inline-size' || axis === 'width'))
+							if (!fulfillsBlockSizeContainment && !fulfillsInlineSizeContainment) return false
 							const value = element.getBoundingClientRect()[axis]
 							const sized = Number(sizeValue) * (
 								sizeUnit === 'em'
@@ -225,8 +242,8 @@ export const cqfill = ((
 							)
 						}
 
-						const cssRuleIndex = getCSSRuleIndexOf(cssGroup, cssRule)
-						const cssPolyfillGroup = insertCssRule(cssGroup, '@media all{}', cssRuleIndex)
+						const cssRuleIndex = getCSSRuleIndexOf(cssParentRule, cssRule)
+						const cssPolyfillGroup = insertCssRule(cssParentRule, '@media all{}', cssRuleIndex)
 
 						let index = 0
 
@@ -251,11 +268,11 @@ export const cqfill = ((
 					}
 				}
 
-				walkCssRules(cssRule)
+				walkCssParent(cssRule)
 			}
 		}
 
-		walkCssRules(styleSheet)
+		walkCssParent(styleSheet)
 
 		onResize()
 	},
@@ -269,22 +286,20 @@ export const cqfill = ((
 	/** @type {DocumentOrShadowRoot | void} */
 	root = defaultRoot
 ) => {
-		if (defaultRoot && !supportsLayoutContainment) listen(0)
-
-		function listen(
-			/** @type {number} */
-			lastNumberOfStyleSheets
-		) {
-			ro = new ResizeObserver(onResize)
-			mo = new MutationObserver(() => {
-				for (const onMutation of onMutationList) onMutation()
-			})
+		if (defaultRoot && !supportsLayoutContainment) {
+			let lastNumberOfStyleSheets = 0
 
 			/** @type {{ styleSheets: StyleSheetList }} */
 			const { styleSheets } = root
-			function onframe() {
-				const numberOfStyleSheets = styleSheets.length
 
+			const onMutation = () => {
+				for (const onMutation of onMutationList) {
+					onMutation()
+				}
+			}
+
+			const onFrame = () => {
+				const numberOfStyleSheets = styleSheets.length
 				if (numberOfStyleSheets !== lastNumberOfStyleSheets) {
 					while (lastNumberOfStyleSheets < numberOfStyleSheets) {
 						const styleSheet = styleSheets[lastNumberOfStyleSheets++]
@@ -304,10 +319,13 @@ export const cqfill = ((
 					lastNumberOfStyleSheets = numberOfStyleSheets
 				}
 
-				requestAnimationFrame(onframe)
+				requestAnimationFrame(onFrame)
 			}
 
-			onframe()
+			ro = new ResizeObserver(onResize)
+			mo = new MutationObserver(onMutation)
+
+			onFrame()
 		}
 	}
 )()
