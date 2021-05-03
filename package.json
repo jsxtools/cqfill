@@ -10,22 +10,22 @@
   "unpkg": "polyfill/cqfill.js",
   "exports": {
     ".": {
-      "browser": "./polyfill",
-      "import": "./polyfill",
-      "require": "./polyfill",
-      "default": "./polyfill"
+      "browser": "./polyfill/cqfill.js",
+      "import": "./polyfill/cqfill.mjs",
+      "require": "./polyfill/cqfill.cjs",
+      "default": "./polyfill/cqfill.mjs"
     },
     "./export": {
-      "browser": "./export",
-      "import": "./export",
-      "require": "./export",
-      "default": "./export"
+      "browser": "./export/cqfill.js",
+      "import": "./export/cqfill.mjs",
+      "require": "./export/cqfill.cjs",
+      "default": "./export/cqfill.mjs"
     },
     "./polyfill": {
-      "browser": "./polyfill",
-      "import": "./polyfill",
-      "require": "./polyfill",
-      "default": "./polyfill"
+      "browser": "./polyfill/cqfill.js",
+      "import": "./polyfill/cqfill.mjs",
+      "require": "./polyfill/cqfill.cjs",
+      "default": "./polyfill/cqfill.mjs"
     },
     "./postcss": {
       "browser": "./postcss/cqfill.js",
@@ -61,7 +61,7 @@
     "test": "node test/postcss.js"
   },
   "devDependencies": {
-    "esbuild": "0.11.17",
+    "esbuild": "0.11.18",
     "nodemon": "2.0.7",
     "postcss": "8.2.13",
     "terser": "5.7.0"
