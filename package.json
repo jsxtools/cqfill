@@ -1,6 +1,6 @@
 {
   "name": "cqfill",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Polyfill for CSS Container Queries",
   "type": "module",
   "main": "polyfill/cqfill.cjs",

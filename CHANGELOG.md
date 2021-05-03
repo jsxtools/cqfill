@@ -1,5 +1,12 @@
 # Changes to CQFill
 
+### 0.6.0 (May 3, 2021)
+
+- Adds support for automatic polyfilling.
+- Fixes an issue where container values were case-sensitive.
+- Fixes an issue where container queries worked on axes not allowed by `contain`.
+- Reduces how often the CSSOM is updated.
+
 ### 0.5.0 (April 28, 2021)
 
 - Adds support for non-px query values — `(width >= 25em)`.

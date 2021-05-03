@@ -20,18 +20,22 @@ Add the **CQFill** polyfill to your page:
 
 ```html
 <script src="https://unpkg.com/cqfill"></script>
-
-<!-- After the stylesheets have been declared... -->
-<script>cqfill()</script>
 ```
 
 Or, add the CQFill script to your NodeJS project:
 
 ```js
-import { cqfill } from 'cqfill'
+import 'cqfill'
+```
 
-// after the stylesheets have been declared
-cqfill()
+Next, add the included [PostCSS] plugin to your `.postcssrc.json` file:
+
+```js
+{
+  "plugins": [
+    "cqfill/postcss"
+  ]
+}
 ```
 
 Now, go forth and use CSS container queries:
@@ -48,36 +52,32 @@ Now, go forth and use CSS container queries:
 }
 ```
 
-## Usage with NextJS
+## Tips
 
-First, add the **CQFill** polyfill to your `pages/_.app.js` file:
-
-```js
-import { cqfill } from 'cqfill'
-
-function App({ Component, pageProps }) {
-	cqfill()
-
-	return <Component {...pageProps} />
-}
-
-export default App
-```
-
-Next, add the included PostCSS 7 plugin to your `.postcssrc.json` file:
+You can use [PostCSS Nesting] to nest `@container` rules:
 
 ```js
 {
   "plugins": [
-    "postcss-nesting/postcss-7",
-    "cqfill/postcss-7"
+    "postcss-nesting",
+    "cqfill/postcss"
   ]
 }
 ```
 
-Now you can use container queries in global CSS or CSS Modules.
+You can activate the polyfill manually:
 
-The nesting plugin pairs nicely with CQFill, letting you nest `@container` at-rules.
+```html
+<script src="https://unpkg.com/cqfill/export"></script>
+
+<script>cqfill() /* cqfill(document); cqfill(shadowRoot) */</script>
+```
+
+```js
+import { cqfill } from 'cqfill'
+
+cqfill() /* cqfill(document); cqfill(shadowRoot) */
+```
 
 ## Usage with PostCSS
 
@@ -107,7 +107,7 @@ postcss([ postcssCQFill ]).process(fromCss, { from, to }).then(
 )
 ```
 
-## Usage with Yourself
+## Usage without PostCSS
 
 Add a fallback property to support the CSS [`contain`] property.
 
@@ -150,3 +150,5 @@ Duplicate container queries using a fallback rule.
 
 [`contain`]: https://developer.mozilla.org/en-US/docs/Web/CSS/contain
 [CSS Container Queries]: https://css.oddbird.net/rwd/query/explainer/
+[PostCSS]: https://github.com/postcss/postcss
+[PostCSS Nesting]: https://github.com/csstools/postcss-nesting
