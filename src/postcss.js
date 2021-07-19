@@ -20,10 +20,12 @@ function postcssCQFill() {
 			) {
 				cssAtRule.params = transformRanges(cssAtRule.params)
 
-				cssAtRule.cloneBefore({
+				const clone = cssAtRule.cloneBefore({
 					name: 'media',
 					params: `--css-container and ${cssAtRule.params}`
 				})
+
+				if (!clone.raws.afterName) clone.raws.afterName = ' '
 			}
 		}
 	}
