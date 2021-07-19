@@ -22,7 +22,7 @@ function postcssCQFill() {
 
 				const clone = cssAtRule.cloneBefore({
 					name: 'media',
-					params: `--css-container and ${cssAtRule.params}`
+					params: `\\@container ${cssAtRule.params}`
 				})
 
 				if (!clone.raws.afterName) clone.raws.afterName = ' '

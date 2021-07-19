@@ -204,7 +204,7 @@ export const cqfill = ((
 				/** @type {string} */
 				const mediaText = cssRule.media ? cssRule.media.mediaText : ''
 
-				const hasContainerQueryPolyfill = mediaText.indexOf('--css-container') === 0
+				const hasContainerQueryPolyfill = mediaText.indexOf('@container') === 0 || mediaText.indexOf('--css-container') === 0
 
 				if (hasContainerQueryPolyfill) {
 					/** @type {null | [string, 'max' | 'min', 'height' | 'width', `${number}${string}`]} */
