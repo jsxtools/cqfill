@@ -42,13 +42,13 @@ Now, go forth and use CSS container queries:
 
 ```css
 .container {
-  contain: layout inline-size;
+	contain: layout inline-size;
 }
 
 @container (min-width: 700px) {
-  .contained {
-    /* styles applied when a container is at least 700px */
-  }
+	.contained {
+		/* styles applied when a container is at least 700px */
+	}
 }
 ```
 
@@ -70,7 +70,9 @@ You can activate the polyfill manually:
 ```html
 <script src="https://unpkg.com/cqfill/export"></script>
 
-<script>cqfill() /* cqfill(document); cqfill(shadowRoot) */</script>
+<script>
+	cqfill() /* cqfill(document); cqfill(shadowRoot) */
+</script>
 ```
 
 ```js
@@ -87,7 +89,7 @@ Use the included PostCSS plugin to process your CSS:
 import postcss from 'postcss'
 import postcssCQFill from 'cqfill/postcss'
 
-postcss([ postcssCQFill ])
+postcss([postcssCQFill])
 ```
 
 To transform CSS with PostCSS and without any other tooling:
@@ -102,9 +104,9 @@ const fromCss = fs.readFileSync(from, 'utf8')
 
 const to = './test/readme.polyfilled.css'
 
-postcss([ postcssCQFill ]).process(fromCss, { from, to }).then(
-  ({ css }) => fs.writeFileSync(to, css)
-)
+postcss([postcssCQFill])
+	.process(fromCss, { from, to })
+	.then(({ css }) => fs.writeFileSync(to, css))
 ```
 
 ## Usage without PostCSS
@@ -114,13 +116,13 @@ Add a fallback property to support the CSS [`contain`] property.
 ```css
 /* before */
 .container {
-  contain: layout inline-size;
+	contain: layout inline-size;
 }
 
 /* after */
 .container {
-  --css-contain: layout inline-size;
-  contain: layout inline-size;
+	--css-contain: layout inline-size;
+	contain: layout inline-size;
 }
 ```
 
@@ -129,26 +131,26 @@ Duplicate container queries using a fallback rule.
 ```css
 /* before */
 @container (min-width: 700px) {
-  .contained {
-    /* styles applied when a container is at least 700px */
-  }
+	.contained {
+		/* styles applied when a container is at least 700px */
+	}
 }
 
 /* after */
 @media --css-container and (min-width: 700px) {
-  .contained {
-    /* styles applied when a container is at least 700px */
-  }
+	.contained {
+		/* styles applied when a container is at least 700px */
+	}
 }
 
 @container (min-width: 700px) {
-  .contained {
-    /* styles applied when a container is at least 700px */
-  }
+	.contained {
+		/* styles applied when a container is at least 700px */
+	}
 }
 ```
 
 [`contain`]: https://developer.mozilla.org/en-US/docs/Web/CSS/contain
-[CSS Container Queries]: https://css.oddbird.net/rwd/query/explainer/
-[PostCSS]: https://github.com/postcss/postcss
-[PostCSS Nesting]: https://github.com/csstools/postcss-nesting
+[css container queries]: https://css.oddbird.net/rwd/query/explainer/
+[postcss]: https://github.com/postcss/postcss
+[postcss nesting]: https://github.com/csstools/postcss-nesting

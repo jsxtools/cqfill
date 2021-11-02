@@ -9,9 +9,9 @@ function postcssCQFill() {
 				cssDeclaration
 			) {
 				cssDeclaration.cloneBefore({
-					prop: '--css-contain'
+					prop: '--css-contain',
 				})
-			}
+			},
 		},
 		AtRule: {
 			container(
@@ -22,12 +22,12 @@ function postcssCQFill() {
 
 				const clone = cssAtRule.cloneBefore({
 					name: 'media',
-					params: `\\@container ${cssAtRule.params}`
+					params: `\\@container ${cssAtRule.params}`,
 				})
 
 				if (!clone.raws.afterName) clone.raws.afterName = ' '
-			}
-		}
+			},
+		},
 	}
 }
 

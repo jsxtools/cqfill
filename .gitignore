@@ -3,7 +3,6 @@ postcss/
 postcss-7/
 polyfill/
 node_modules/
-package-lock.json
 yarn.lock
 *.log*
 .*
