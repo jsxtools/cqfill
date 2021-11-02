@@ -1,86 +1,91 @@
 {
-  "name": "cqfill",
-  "version": "0.6.0",
-  "description": "Polyfill for CSS Container Queries",
-  "type": "module",
-  "main": "polyfill/cqfill.cjs",
-  "module": "polyfill/cqfill.mjs",
-  "typings": "polyfill/cqfill.d.ts",
-  "jsdelivr": "polyfill/cqfill.js",
-  "unpkg": "polyfill/cqfill.js",
-  "exports": {
-    ".": {
-      "browser": "./polyfill/cqfill.js",
-      "import": "./polyfill/cqfill.mjs",
-      "require": "./polyfill/cqfill.cjs",
-      "default": "./polyfill/cqfill.mjs"
-    },
-    "./export": {
-      "browser": "./export/cqfill.js",
-      "import": "./export/cqfill.mjs",
-      "require": "./export/cqfill.cjs",
-      "default": "./export/cqfill.mjs"
-    },
-    "./polyfill": {
-      "browser": "./polyfill/cqfill.js",
-      "import": "./polyfill/cqfill.mjs",
-      "require": "./polyfill/cqfill.cjs",
-      "default": "./polyfill/cqfill.mjs"
-    },
-    "./postcss": {
-      "browser": "./postcss/cqfill.js",
-      "import": "./postcss/cqfill.mjs",
-      "require": "./postcss/cqfill.cjs",
-      "default": "./postcss/cqfill.mjs"
-    },
-    "./postcss-7": {
-      "browser": "./postcss-7/cqfill.js",
-      "import": "./postcss-7/cqfill.mjs",
-      "require": "./postcss-7/cqfill.cjs",
-      "default": "./postcss-7/cqfill.mjs"
-    }
-  },
-  "files": [
-    "export",
-    "polyfill",
-    "postcss",
-    "postcss-7"
-  ],
-  "author": "Jonathan Neal <jonathantneal@hotmail.com>",
-  "license": "CC0-1.0",
-  "repository": "jsxtools/cqfill",
-  "homepage": "https://github.com/jsxtools/cqfill#readme",
-  "bugs": "https://github.com/jsxtools/cqfill/issues",
-  "publishConfig": {
-    "access": "public"
-  },
-  "scripts": {
-    "build": "node .bin/build.js",
-    "pretest": "node .bin/build.js && npm link",
-    "posttest": "npm unlink cqfill",
-    "test": "node test/postcss.js"
-  },
-  "devDependencies": {
-    "esbuild": "0.11.18",
-    "nodemon": "2.0.7",
-    "postcss": "8.2.13",
-    "terser": "5.7.0"
-  },
-  "keywords": [
-    "container",
-    "css",
-    "csswg",
-    "element",
-    "features",
-    "future",
-    "javascript",
-    "js",
-    "layout",
-    "polyfill",
-    "query",
-    "queries",
-    "specifications",
-    "specs",
-    "styles"
-  ]
+	"name": "cqfill",
+	"version": "0.6.0",
+	"description": "Polyfill for CSS Container Queries",
+	"type": "module",
+	"main": "polyfill/cqfill.cjs",
+	"module": "polyfill/cqfill.mjs",
+	"typings": "polyfill/cqfill.d.ts",
+	"jsdelivr": "polyfill/cqfill.js",
+	"unpkg": "polyfill/cqfill.js",
+	"exports": {
+		".": {
+			"browser": "./polyfill/cqfill.js",
+			"import": "./polyfill/cqfill.mjs",
+			"require": "./polyfill/cqfill.cjs",
+			"default": "./polyfill/cqfill.mjs"
+		},
+		"./export": {
+			"browser": "./export/cqfill.js",
+			"import": "./export/cqfill.mjs",
+			"require": "./export/cqfill.cjs",
+			"default": "./export/cqfill.mjs"
+		},
+		"./polyfill": {
+			"browser": "./polyfill/cqfill.js",
+			"import": "./polyfill/cqfill.mjs",
+			"require": "./polyfill/cqfill.cjs",
+			"default": "./polyfill/cqfill.mjs"
+		},
+		"./postcss": {
+			"browser": "./postcss/cqfill.js",
+			"import": "./postcss/cqfill.mjs",
+			"require": "./postcss/cqfill.cjs",
+			"default": "./postcss/cqfill.mjs"
+		},
+		"./postcss-7": {
+			"browser": "./postcss-7/cqfill.js",
+			"import": "./postcss-7/cqfill.mjs",
+			"require": "./postcss-7/cqfill.cjs",
+			"default": "./postcss-7/cqfill.mjs"
+		}
+	},
+	"files": [
+		"export",
+		"polyfill",
+		"postcss",
+		"postcss-7"
+	],
+	"author": "Jonathan Neal <jonathantneal@hotmail.com>",
+	"license": "CC0-1.0",
+	"repository": "jsxtools/cqfill",
+	"homepage": "https://github.com/jsxtools/cqfill#readme",
+	"bugs": "https://github.com/jsxtools/cqfill/issues",
+	"publishConfig": {
+		"access": "public"
+	},
+	"scripts": {
+		"build": "node .bin/build.js",
+		"pretest": "node .bin/build.js && npm link",
+		"posttest": "npm unlink cqfill",
+		"test": "node test/postcss.js",
+		"format": "prettier -w .",
+		"lint": "eslint ."
+	},
+	"devDependencies": {
+		"esbuild": "0.11.18",
+		"eslint": "8.1.0",
+		"eslint-config-prettier": "8.3.0",
+		"nodemon": "2.0.7",
+		"postcss": "8.2.13",
+		"prettier": "2.4.1",
+		"terser": "5.7.0"
+	},
+	"keywords": [
+		"container",
+		"css",
+		"csswg",
+		"element",
+		"features",
+		"future",
+		"javascript",
+		"js",
+		"layout",
+		"polyfill",
+		"query",
+		"queries",
+		"specifications",
+		"specs",
+		"styles"
+	]
 }

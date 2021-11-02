@@ -14,7 +14,9 @@ export const isProcessMeta = (meta) => {
 /** Returns the values for a given process argument. */
 export const getProcessArgOf = (name) => {
 	const lead = argv.indexOf('--' + name) + 1
-	const tail = lead ? argv.slice(lead).findIndex((arg) => arg.startsWith('--')) : 0
+	const tail = lead
+		? argv.slice(lead).findIndex((arg) => arg.startsWith('--'))
+		: 0
 
 	const vals = lead ? argv.slice(lead, ~tail ? lead + tail : argv.length) : []
 

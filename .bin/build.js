@@ -15,12 +15,11 @@ const variants = {
 		transform(code, exports) {
 			/** @type {string[]} */
 			const esmExports = []
-			for (const name in exports) esmExports.push(`${exports[name]} as ${name}`)
-			return (
-				esmExports.length
-					? `${code}export{${esmExports.join(',')}}`
+			for (const name in exports)
+				esmExports.push(`${exports[name]} as ${name}`)
+			return esmExports.length
+				? `${code}export{${esmExports.join(',')}}`
 				: code
-			)
 		},
 	},
 	cjs: {
@@ -28,21 +27,23 @@ const variants = {
 		transform(code, exports) {
 			/** @type {string[]} */
 			const cjsExports = []
-			for (const name in exports) cjsExports.push(`${name}:${exports[name]}`)
-			return (
-				cjsExports.length
-					? 'default' in exports
-						? `${code}module.exports=Object.assign(${exports.default},{${cjsExports.join(',')}})`
+			for (const name in exports)
+				cjsExports.push(`${name}:${exports[name]}`)
+			return cjsExports.length
+				? 'default' in exports
+					? `${code}module.exports=Object.assign(${
+							exports.default
+					  },{${cjsExports.join(',')}})`
 					: `${code}module.exports={${cjsExports.join(',')}}`
 				: code
-			)
 		},
 	},
 	iife: {
 		extension: 'js',
 		transform(code, exports) {
 			code = code.replace(/;$/, '')
-			for (const name in exports) code = `${code};globalThis.${name}=${exports[name]}`
+			for (const name in exports)
+				code = `${code};globalThis.${name}=${exports[name]}`
 			return code
 		},
 	},
@@ -54,10 +55,7 @@ export const build = async (pkgUrl, base, opts) => {
 
 	/** @type {{ name: string }} */
 	const { name } = JSON.parse(
-		await fs.readFile(
-			new URL('package.json', pkgUrl),
-			'utf8'
-		)
+		await fs.readFile(new URL('package.json', pkgUrl), 'utf8')
 	)
 
 	if (!opts.only.length || opts.only.includes(name)) {
@@ -95,23 +93,31 @@ export const build = async (pkgUrl, base, opts) => {
 
 		// prepare variations
 		/** @type {(code: string, index?: number) => [string, string]} */
-		const splitByExport = (code, index = code.indexOf('export')) => [code.slice(0, index), code.slice(index)]
+		const splitByExport = (code, index = code.indexOf('export')) => [
+			code.slice(0, index),
+			code.slice(index),
+		]
 		const [lead, tail] = splitByExport(code)
 
 		/** @type {{ [name: string]: string }} */
 		const exports = Array.from(tail.matchAll(/([$\w]+) as (\w+)/g)).reduce(
-			(exports, each) => Object.assign(exports, { [each[2]]: each[1] }), Object.create(null)
+			(exports, each) => Object.assign(exports, { [each[2]]: each[1] }),
+			Object.create(null)
 		)
 
 		/** @type {(object: object, name: string) => boolean} */
-		const hasOwnProperty = (object, name) => Object.prototype.hasOwnProperty.call(object, name)
+		const hasOwnProperty = (object, name) =>
+			Object.prototype.hasOwnProperty.call(object, name)
 
 		const customExports = {
 			cjs: { ...exports },
-			iife: { ...exports }
+			iife: { ...exports },
 		}
 
-		if (hasOwnProperty(customExports.iife, 'default') && !hasOwnProperty(customExports.iife, base)) {
+		if (
+			hasOwnProperty(customExports.iife, 'default') &&
+			!hasOwnProperty(customExports.iife, base)
+		) {
 			customExports.iife[base] = customExports.iife.default
 
 			delete customExports.iife.default
@@ -126,41 +132,52 @@ export const build = async (pkgUrl, base, opts) => {
 		for (const variant in variants) {
 			/** @type {Variant} */
 			const variantInfo = variants[variant]
-			const variantPath = new URL(`${name}.${variantInfo.extension}`, outDirUrl).pathname
-			const variantCode = variantInfo.transform(lead, customExports[variant] || exports)
-			const variantMins = (Buffer.byteLength(variantCode) / 1000).toFixed(2)
-			const variantGzip = Number(zlib.gzipSync(variantCode, { level: 9 }).length / 1000).toFixed(2)
+			const variantPath = new URL(
+				`${name}.${variantInfo.extension}`,
+				outDirUrl
+			).pathname
+			const variantCode = variantInfo.transform(
+				lead,
+				customExports[variant] || exports
+			)
+			const variantMins = (Buffer.byteLength(variantCode) / 1000).toFixed(
+				2
+			)
+			const variantGzip = Number(
+				zlib.gzipSync(variantCode, { level: 9 }).length / 1000
+			).toFixed(2)
 
 			size.types[variant] = {
 				min: variantMins,
 				gzp: variantGzip,
 			}
 
-			const mapping = variant === 'iife' ? '' : `\n//# sourceMappingUrl=${base}.map`
+			const mapping =
+				variant === 'iife' ? '' : `\n//# sourceMappingUrl=${base}.map`
 
 			await fs.writeFile(variantPath, variantCode + mapping)
 
-			const packageJSON = JSON.stringify({
-				private: true,
-				type: 'module',
-				main: `${name}.cjs`,
-				module: `${name}.mjs`,
-				jsdelivr: `${name}.js`,
-				unpkg: `${name}.js`,
-				files: [
-					`${name}.cjs`,
-					`${name}.js`,
-					`${name}.mjs`
-				],
-				exports: {
-					'.': {
-						browser: `./${name}.js`,
-						import: `./${name}.mjs`,
-						require: `./${name}.cjs`,
-						default: `./${name}.mjs`
-					}
-				}
-			}, null, '  ')
+			const packageJSON = JSON.stringify(
+				{
+					private: true,
+					type: 'module',
+					main: `${name}.cjs`,
+					module: `${name}.mjs`,
+					jsdelivr: `${name}.js`,
+					unpkg: `${name}.js`,
+					files: [`${name}.cjs`, `${name}.js`, `${name}.mjs`],
+					exports: {
+						'.': {
+							browser: `./${name}.js`,
+							import: `./${name}.mjs`,
+							require: `./${name}.cjs`,
+							default: `./${name}.mjs`,
+						},
+					},
+				},
+				null,
+				'  '
+			)
 
 			await fs.writeFile(new URL('package.json', outDirUrl), packageJSON)
 		}
