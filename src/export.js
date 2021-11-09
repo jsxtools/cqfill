@@ -53,7 +53,7 @@ export const cqfill = ((
 	insertCssRule = (cssParentRule, cssText, index) => cssParentRule.cssRules[cssParentRule.insertRule(cssText, index)],
 
 	onResize = () => {
-		for (const [containedSelectorText, innerRule, doesFulfillQuery, axis] of containerQueries) {
+		for (const [containedSelectorText, innerRule, doesFulfillQuery, ] of containerQueries) {
 			/** @type {Set<Element>} */
 			const fulfilledElements = new Set()
 
