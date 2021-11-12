@@ -309,6 +309,7 @@ export const cqfill = ((
 							&& (
 								!styleSheet.href
 								|| styleSheet.href.startsWith(location.origin)
+								|| styleSheet.href.startsWith(`blob:${location.origin}`)
 							)
 						) {
 							polyfillContainerQueries(root, styleSheet)
