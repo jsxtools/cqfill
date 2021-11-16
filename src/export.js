@@ -126,7 +126,7 @@ export const cqfill = ((
 			const doesMatchAllElements = elements.length === lastElements.length && every.call(elements, doesMatchElement)
 
 			if (!doesMatchAllElements) {
-				layoutContainerSet.clear()
+				// layoutContainerSet.clear()
 
 				ro.disconnect()
 
